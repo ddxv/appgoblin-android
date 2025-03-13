@@ -42,7 +42,7 @@ android {
 
 dependencies {
 
-
+    implementation("androidx.navigation:navigation-compose:2.8.8")
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
