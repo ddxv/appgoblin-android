@@ -15,19 +15,20 @@ import android.util.Log
 
 class AppRepository(private val packageManager: PackageManager) {
 
-    // Get installed applications
     suspend fun getInstalledApps(): List<AppInfo> = withContext(Dispatchers.IO) {
-        var installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-        println("Installed Apps Count: ${installedApps.size}") // Debug Log
-        installedApps.map { app ->
-            val appName = app.loadLabel(packageManager).toString()
-            val packageName = app.packageName
-            AppInfo(name = appName, packageName = packageName)
-        }
+        val installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+
+        installedApps
+            .filterNot { it.packageName.startsWith("com.android") || it.packageName.startsWith("android.") }
+            .map { app ->
+                val appName = app.loadLabel(packageManager).toString()
+                val packageName = app.packageName
+                AppInfo(name = appName, packageName = packageName)
+            }
             .sortedByDescending { it.packageName }
     }
 
-    // Send selected apps to API
+
     suspend fun analyzeApps(selectedApps: List<AppInfo>): AppAnalysisResult {
         return withContext(Dispatchers.IO) {
             try {

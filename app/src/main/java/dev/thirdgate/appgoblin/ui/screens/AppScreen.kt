@@ -1,12 +1,11 @@
 package dev.thirdgate.appgoblin.ui.screens
 
+import android.content.Intent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -22,9 +21,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import dev.thirdgate.appgoblin.data.model.AppAnalysisResult
+import dev.thirdgate.appgoblin.AboutActivity
 import dev.thirdgate.appgoblin.data.model.AppInfo
 import dev.thirdgate.appgoblin.ui.components.CheckableAppList
 import dev.thirdgate.appgoblin.data.repository.AppRepository
@@ -32,7 +32,6 @@ import dev.thirdgate.appgoblin.encodeURL
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 
 @Composable
@@ -49,12 +48,13 @@ fun Content(title: String, modifier: Modifier = Modifier) {
 @Composable
 fun AppScreen(apps: List<AppInfo>, navController: NavHostController, appRepository: AppRepository) {
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("My Apps", "Settings")
+    val tabs = listOf("My Apps", "About")
     val icons = listOf(
         Icons.Default.Build,
         Icons.Default.Settings
     )
 
+    val context = LocalContext.current  // Get context for launching activities
     var apiError by remember { mutableStateOf<String?>(null) }
 
     // Manage selected apps state here
@@ -69,7 +69,15 @@ fun AppScreen(apps: List<AppInfo>, navController: NavHostController, appReposito
                         icon = { Icon(icons[index], contentDescription = title) },
                         label = { Text(title) },
                         selected = selectedTab == index,
-                        onClick = { selectedTab = index }
+                        onClick = {
+                            if (index == 1) {
+                                // Launch AboutActivity when "About" tab is clicked
+                                val intent = Intent(context, AboutActivity::class.java)
+                                context.startActivity(intent)
+                            } else {
+                                selectedTab = index
+                            }
+                        }
                     )
                 }
             }
@@ -77,8 +85,7 @@ fun AppScreen(apps: List<AppInfo>, navController: NavHostController, appReposito
     ) { innerPadding ->
         when (selectedTab) {
             0 -> CheckableAppList(
-                apps = apps,  // Use the original apps list here
-//                selectedApps = selectedApps, // Pass selectedApps for managing the selection state
+                apps = apps,
                 apiError = apiError,
                 onSendSelected = { selected ->
                     // Handle the analysis and navigation to the results screen
@@ -97,7 +104,7 @@ fun AppScreen(apps: List<AppInfo>, navController: NavHostController, appReposito
                 },
                 modifier = Modifier.padding(innerPadding)
             )
-            1 -> Content("Settings", modifier = Modifier.padding(innerPadding))
+            1 -> Content("About", modifier = Modifier.padding(innerPadding))
         }
     }
 }

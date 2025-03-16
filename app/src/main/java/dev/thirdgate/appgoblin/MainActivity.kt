@@ -7,8 +7,8 @@
     import androidx.activity.ComponentActivity
     import androidx.activity.compose.setContent
     import androidx.activity.enableEdgeToEdge
+    import androidx.compose.foundation.isSystemInDarkTheme
     import androidx.compose.runtime.mutableStateOf
-    import androidx.compose.runtime.remember
     import androidx.lifecycle.lifecycleScope
     import androidx.navigation.compose.rememberNavController
     import dev.thirdgate.appgoblin.data.model.AppInfo
@@ -25,7 +25,7 @@
             enableEdgeToEdge()
 
             val packageManager: PackageManager = packageManager
-            val appRepository = AppRepository(packageManager)  // Initialize repository
+            val appRepository = AppRepository(packageManager)
 
             val installedApps = mutableStateOf<List<AppInfo>>(emptyList())
             // Fetch installed apps safely
@@ -40,7 +40,7 @@
             Log.i("AppGoblin", "Installed apps: $installedApps")
 
             setContent {
-                AppGoblinTheme {
+                AppGoblinTheme(darkTheme = isSystemInDarkTheme(), dynamicColor = false) {
                     val navController = rememberNavController()
                     AppNavigation(navController, installedApps.value, appRepository)  // Pass repository
                 }
