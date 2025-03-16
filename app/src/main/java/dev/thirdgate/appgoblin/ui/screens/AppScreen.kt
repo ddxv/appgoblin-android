@@ -49,11 +49,9 @@ fun Content(title: String, modifier: Modifier = Modifier) {
 @Composable
 fun AppScreen(apps: List<AppInfo>, navController: NavHostController, appRepository: AppRepository) {
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("My Apps", "Favorites", "About", "Settings")
+    val tabs = listOf("My Apps", "Settings")
     val icons = listOf(
         Icons.Default.Build,
-        Icons.Default.Favorite,
-        Icons.Default.Info,
         Icons.Default.Settings
     )
 
@@ -99,9 +97,7 @@ fun AppScreen(apps: List<AppInfo>, navController: NavHostController, appReposito
                 },
                 modifier = Modifier.padding(innerPadding)
             )
-            1 -> Content("Favorites", modifier = Modifier.padding(innerPadding))
-            2 -> Content("About", modifier = Modifier.padding(innerPadding))
-            3 -> Content("Settings", modifier = Modifier.padding(innerPadding))
+            1 -> Content("Settings", modifier = Modifier.padding(innerPadding))
         }
     }
 }

@@ -1,27 +1,23 @@
 package dev.thirdgate.appgoblin.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import dev.thirdgate.appgoblin.data.model.AppAnalysisResult
+import dev.thirdgate.appgoblin.data.model.CompanyCategory
+import dev.thirdgate.appgoblin.data.model.SdkByCompanyCategory
+import dev.thirdgate.appgoblin.data.model.StoreAppInfo
 
 @Composable
 fun ByCompanyCategoryScreen(results: AppAnalysisResult, navController: NavHostController) {
-    val sdksByStoreId = results.sdks_by_store_id
+    // Extract categories
+    val categories = results.sdks_by_company_category
+
     Scaffold(
         topBar = {
             Row(
@@ -43,41 +39,103 @@ fun ByCompanyCategoryScreen(results: AppAnalysisResult, navController: NavHostCo
         LazyColumn(
             modifier = Modifier
                 .padding(padding)
-                .fillMaxSize()
+                .fillMaxHeight()
         ) {
-
-            sdksByStoreId.forEach { (storeId, appResults) ->
+            categories.forEach { (categoryName, companies) ->
                 item {
-                    Text(
-                        text = storeId,
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-
-                items(appResults) { result ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = result.company_name,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                text = "Category: ${result.category_slug}",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            Text(
-                                text = "Domain: ${result.company_domain}",
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-                    }
+                    CategoryCard(categoryName, companies)
                 }
             }
         }
     }
 }
+
+@Composable
+fun CategoryCard(categoryName: CompanyCategory, companies: List<SdkByCompanyCategory>) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = categoryName.prettyName,
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        companies.forEach { company ->
+            CompanyCard(company)
+        }
+    }
+}
+
+@Composable
+fun CompanyCard(company: SdkByCompanyCategory) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = company.company_name,
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                text = "Domain: ${company.company_domain}",
+                style = MaterialTheme.typography.bodySmall
+            )
+
+            Button(
+                onClick = { expanded = !expanded },
+                modifier = Modifier.padding(top = 8.dp)
+            ) {
+                Text(if (expanded) "Hide Apps" else "Show Apps")
+            }
+
+            if (expanded) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 300.dp) // Constrain the height if needed
+                ) {
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                    items(company.apps) { app ->
+                        AppItem(app)
+                    }
+                }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AppItem(app: StoreAppInfo) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = app.app_name,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                text = "Store: ${app.store}",
+                style = MaterialTheme.typography.bodySmall
+            )
+            Text(
+                text = "Store ID: ${app.store_id}",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
+}
+
