@@ -7,8 +7,9 @@ import kotlinx.serialization.Serializable
 data class SdkByStoreId(
     val category_slug: String,
     val company_name: String,
-    val company_domain: String
-)
+    val company_domain: String,
+    val percent_open_source: Double
+    )
 
 @Serializable
 enum class CompanyCategory(val slug: String, val prettyName: String) {
@@ -34,17 +35,18 @@ data class StoreAppInfo(
 
 @Serializable
 data class SdkByCompanyCategory(
-    val company_name: String,
-    val company_domain: String,
-    val count: Int,
-    val apps: List<StoreAppInfo>
+    val company_name: String = "None",
+    val company_domain: String = "None",
+    val count: Int = 0,
+    val percent_open_source: Double = 0.0,
+    val apps: List<StoreAppInfo> = emptyList()
 )
 
 @Serializable
 data class AppAnalysisResult(
-    val sdks_by_store_id: Map<String, List<SdkByStoreId>>,
+    val sdks_by_store_id: Map<String, List<SdkByStoreId>> = emptyMap(),
     val company_categories: List<String> = CompanyCategory.ALL_CATEGORIES,
-    val sdks_by_company_category: Map<CompanyCategory, List<SdkByCompanyCategory>>,
-    val failed_store_ids: List<String>,
-    val success_store_ids: List<String>
+    val sdks_by_company_category: Map<CompanyCategory, List<SdkByCompanyCategory>> = emptyMap(),
+    val failed_store_ids: List<String> = emptyList(),
+    val success_store_ids: List<String> = emptyList()
 )

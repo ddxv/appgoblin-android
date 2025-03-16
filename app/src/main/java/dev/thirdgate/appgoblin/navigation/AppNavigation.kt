@@ -5,11 +5,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import dev.thirdgate.appgoblin.ui.screens.AppScreen
-import dev.thirdgate.appgoblin.ui.screens.ByStoreIdScreen
 import dev.thirdgate.appgoblin.data.model.AppInfo
 import dev.thirdgate.appgoblin.data.model.AppAnalysisResult
 import dev.thirdgate.appgoblin.data.repository.AppRepository
-import dev.thirdgate.appgoblin.ui.screens.ByCompanyCategoryScreen
 import dev.thirdgate.appgoblin.ui.screens.ResultsComparisonScreen
 import kotlinx.serialization.json.Json
 import java.net.URLDecoder
@@ -27,7 +25,7 @@ fun AppNavigation(navController: NavHostController, appList: List<AppInfo>, appR
             val results = Json.decodeFromString<AppAnalysisResult>(decodedJson)
 
             // Results screen with tabs for comparison
-            ResultsComparisonScreen(results = results, navController = navController)
+            ResultsComparisonScreen(results = results, navController = navController, appList)
         }
     }
 }

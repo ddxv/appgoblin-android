@@ -1,6 +1,5 @@
     package dev.thirdgate.appgoblin
 
-
     import android.content.pm.PackageManager
     import android.os.Bundle
     import android.util.Log
@@ -24,8 +23,8 @@
             super.onCreate(savedInstanceState)
             enableEdgeToEdge()
 
-            val packageManager: PackageManager = packageManager
-            val appRepository = AppRepository(packageManager)
+
+            val appRepository by lazy { AppRepository(applicationContext) }
 
             val installedApps = mutableStateOf<List<AppInfo>>(emptyList())
             // Fetch installed apps safely

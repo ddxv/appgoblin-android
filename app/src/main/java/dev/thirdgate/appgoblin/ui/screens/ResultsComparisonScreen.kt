@@ -16,14 +16,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import dev.thirdgate.appgoblin.data.model.AppAnalysisResult
+import dev.thirdgate.appgoblin.data.model.AppInfo
 
 @Composable
-fun ResultsComparisonScreen(results: AppAnalysisResult, navController: NavHostController) {
+fun ResultsComparisonScreen(results: AppAnalysisResult, navController: NavHostController, installedApps: List<AppInfo>) {
     var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("By Store ID", "By Company Category")
+    val tabs = listOf("By SDK Companies", "By App")
     val icons = listOf(
-        Icons.Default.Build, // Icon for ByStoreId
-        Icons.Default.Info   // Icon for ByCompanyCategory
+        Icons.Default.Info,
+        Icons.Default.Build,
     )
 
     Scaffold(
@@ -44,7 +45,7 @@ fun ResultsComparisonScreen(results: AppAnalysisResult, navController: NavHostCo
         }
     ) { innerPadding ->
         when (selectedTab) {
-            0 -> ByCompanyCategoryScreen(results = results, navController = navController)
+            0 -> ByCompanyCategoryScreen(results = results, navController = navController, installedApps = installedApps)
             1 -> ByStoreIdScreen(results = results, navController = navController, )
         }
     }
