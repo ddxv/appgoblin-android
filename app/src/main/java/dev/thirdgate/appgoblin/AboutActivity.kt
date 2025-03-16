@@ -94,6 +94,17 @@ fun AboutPage() {
             }
         )
         Spacer(modifier = Modifier.height(48.dp))
+        Text("About AppGoblin", fontSize = 18.sp, fontWeight = FontWeight.Bold,)
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            "appgoblin.info/about",
+            fontSize = 18.sp,
+            modifier = Modifier.clickable {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://appgoblin.info/about?referrer=dev.thirdgate.appgoblin"))
+                currentContext.value.startActivity(intent)
+            }
+        )
+        Spacer(modifier = Modifier.height(48.dp))
         Text("About Developer", fontSize = 18.sp, fontWeight = FontWeight.Bold,)
         Spacer(modifier = Modifier.height(8.dp))
         Text(
@@ -108,12 +119,12 @@ fun AboutPage() {
         Text("Privacy Policy", fontSize = 18.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            "thirdgate.dev/privacypolicy.html",
+            "appgoblin.info/privacy_policy.html",
             fontSize = 18.sp,
             modifier = Modifier.clickable {
                 val intent = Intent(
                     Intent.ACTION_VIEW,
-                    Uri.parse("https://thirdgate.dev/privacypolicy.html")
+                    Uri.parse("https://appgoblin.info/privacy_policy.html")
                 )
                 currentContext.value.startActivity(intent)
             }

@@ -208,7 +208,7 @@ fun CompanyCard(company: SdkByCompanyCategory, numIdsSuccessful: Int, installedA
                             modifier = Modifier.clickable {
                                 val intent = Intent(
                                     Intent.ACTION_VIEW,
-                                    Uri.parse("https://appgoblin.info/companies/${company.company_domain}?ref=appgoblin_android")
+                                    Uri.parse("https://appgoblin.info/companies/${company.company_domain}?referrer=dev.thirdgate.appgoblin")
                                 )
                                 currentContext.value.startActivity(intent)
                             },
@@ -317,7 +317,7 @@ fun AppItem(app: StoreAppInfo, appIcon: ImageBitmap) {
                     onClick = {
                         val intent = Intent(
                             Intent.ACTION_VIEW,
-                            Uri.parse("https://appgoblin.info/apps/${app.store_id}?ref=appgoblin_android")
+                            Uri.parse("https://appgoblin.info/apps/${app.store_id}?referrer=dev.thirdgate.appgoblin")
                         )
                         currentContext.value.startActivity(intent)
                     }

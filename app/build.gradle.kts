@@ -13,7 +13,7 @@ android {
         applicationId = "dev.thirdgate.appgoblin"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
+        versionCode = 2
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -43,8 +43,8 @@ android {
 dependencies {
 
     // Open Source MMP/Attribution SDK
-    implementation("dev.openattribution:open-attribution-sdk:0.0.10")
-    implementation("androidx.navigation:navigation-compose:2.8.8")
+    implementation(libs.open.attribution.sdk)
+    implementation(libs.androidx.navigation.compose)
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
