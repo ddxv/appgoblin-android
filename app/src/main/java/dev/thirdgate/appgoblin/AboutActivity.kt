@@ -70,7 +70,7 @@ fun AboutPage() {
         Text("Version $versionText", fontSize = 16.sp)
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text("Source code available", fontSize = 20.sp)
+        Text("All open source. Please consider starring on GitHub if you found this useful.", fontSize = 20.sp)
         Spacer(modifier = Modifier.height(16.dp))
         Text("App Source Code", fontWeight = FontWeight.Bold, fontSize = 18.sp)
         Text(

@@ -124,7 +124,7 @@ fun AppScreen(
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "Scanning installed apps...",
+                                text = "Building list of installed apps...",
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -143,19 +143,19 @@ fun AppScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Search,
-                                contentDescription = "Scan apps",
+                                contentDescription = "Build List of installed apps",
                                 modifier = Modifier.size(64.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "No apps scanned yet",
+                                text = "No list of installed apps yet",
                                 style = MaterialTheme.typography.titleLarge,
                                 color = MaterialTheme.colorScheme.onBackground
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Scan your installed apps to identify SDKs and third-party libraries",
+                                text = "Build list of your installed apps. After this is built you can select which app IDs to send to AppGoblin to identify SDKs and third-party libraries",
                                 style = MaterialTheme.typography.bodyLarge,
                                 textAlign = TextAlign.Center,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -184,10 +184,10 @@ fun AppScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Search,
-                                    contentDescription = "Scan"
+                                    contentDescription = "Search"
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(text = "Scan Apps")
+                                Text(text = "Build list of installed apps")
                             }
                         }
                     }
