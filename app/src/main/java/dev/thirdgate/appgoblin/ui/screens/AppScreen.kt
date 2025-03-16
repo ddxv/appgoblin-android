@@ -88,7 +88,7 @@ fun AppScreen(apps: List<AppInfo>, navController: NavHostController, appReposito
                         try {
                             val response = appRepository.analyzeApps(selected)
                             val json = Json { ignoreUnknownKeys = true }
-                            val responseJson = json.encodeToString(ListSerializer(AppAnalysisResult.serializer()), response)
+                            val responseJson = json.encodeToString(response)
 
                             // Navigate to results screen
                             navController.navigate("results_screen/${responseJson.encodeURL()}")

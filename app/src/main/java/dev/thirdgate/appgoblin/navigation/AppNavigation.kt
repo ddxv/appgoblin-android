@@ -5,7 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import dev.thirdgate.appgoblin.ui.screens.AppScreen
-import dev.thirdgate.appgoblin.ui.screens.ResultsScreen
+import dev.thirdgate.appgoblin.ui.screens.ByStoreIdScreen
 import dev.thirdgate.appgoblin.data.model.AppInfo
 import dev.thirdgate.appgoblin.data.model.AppAnalysisResult
 import dev.thirdgate.appgoblin.data.repository.AppRepository
@@ -20,8 +20,8 @@ fun AppNavigation(navController: NavHostController, appList: List<AppInfo>, appR
         composable("results_screen/{results}") { backStackEntry ->
             val resultsJson = backStackEntry.arguments?.getString("results") ?: ""
             val decodedJson = URLDecoder.decode(resultsJson, StandardCharsets.UTF_8.name()) // Decode URL
-            val results = Json.decodeFromString<List<AppAnalysisResult>>(decodedJson)
-            ResultsScreen(results, navController)
+            val results = Json.decodeFromString<AppAnalysisResult>(decodedJson)
+            ByStoreIdScreen(results, navController)
         }
     }
 }

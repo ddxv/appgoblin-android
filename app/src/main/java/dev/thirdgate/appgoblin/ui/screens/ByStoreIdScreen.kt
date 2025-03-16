@@ -20,7 +20,8 @@ import androidx.navigation.NavHostController
 import dev.thirdgate.appgoblin.data.model.AppAnalysisResult
 
 @Composable
-fun ResultsScreen(results: List<AppAnalysisResult>, navController: NavHostController) {
+fun ByStoreIdScreen(results: AppAnalysisResult, navController: NavHostController) {
+    val sdksByStoreId = results.sdks_by_store_id
     Scaffold(
         topBar = {
             Row(
@@ -44,10 +45,8 @@ fun ResultsScreen(results: List<AppAnalysisResult>, navController: NavHostContro
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            // Group results by store_id
-            val groupedResults = results.groupBy { it.store_id }
 
-            groupedResults.forEach { (storeId, appResults) ->
+            sdksByStoreId.forEach { (storeId, appResults) ->
                 item {
                     Text(
                         text = storeId,

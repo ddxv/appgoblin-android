@@ -28,7 +28,7 @@ class AppRepository(private val packageManager: PackageManager) {
     }
 
     // Send selected apps to API
-    suspend fun analyzeApps(selectedApps: List<AppInfo>): List<AppAnalysisResult> {
+    suspend fun analyzeApps(selectedApps: List<AppInfo>): AppAnalysisResult {
         return withContext(Dispatchers.IO) {
             try {
                 val packageNames = selectedApps.map { it.packageName }
@@ -51,7 +51,7 @@ class AppRepository(private val packageManager: PackageManager) {
                     }
 
                     val jsonParser = Json { ignoreUnknownKeys = true }
-                    jsonParser.decodeFromString<List<AppAnalysisResult>>(responseBody)
+                    jsonParser.decodeFromString<AppAnalysisResult>(responseBody)
                 }
             } catch (e: Exception) {
                 Log.e("AppGoblin", "Error analyzing apps: ${e.message}")
