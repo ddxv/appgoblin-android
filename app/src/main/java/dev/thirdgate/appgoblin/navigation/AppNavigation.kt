@@ -1,6 +1,8 @@
 package dev.thirdgate.appgoblin.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,9 +16,21 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
 @Composable
-fun AppNavigation(navController: NavHostController, appList: List<AppInfo>, appRepository: AppRepository) {
+fun AppNavigation(navController: NavHostController, appRepository: AppRepository) {
+    // Create a shared state to store scanned apps
+    val scannedApps = remember { mutableStateOf<List<AppInfo>>(emptyList()) }
+
     NavHost(navController = navController, startDestination = "app_screen") {
-        composable("app_screen") { AppScreen(appList, navController, appRepository) }
+        composable("app_screen") {
+            AppScreen(
+                navController = navController,
+                appRepository = appRepository,
+                onAppsScanned = { apps ->
+                    // Update the shared state when apps are scanned
+                    scannedApps.value = apps
+                }
+            )
+        }
 
         // Results screen, allowing comparison
         composable("results_screen/{results}") { backStackEntry ->
@@ -24,9 +38,12 @@ fun AppNavigation(navController: NavHostController, appList: List<AppInfo>, appR
             val decodedJson = URLDecoder.decode(resultsJson, StandardCharsets.UTF_8.name()) // Decode URL
             val results = Json.decodeFromString<AppAnalysisResult>(decodedJson)
 
-            // Results screen with tabs for comparison
-            ResultsComparisonScreen(results = results, navController = navController, appList)
-
+            // Pass the scanned apps to the results screen
+            ResultsComparisonScreen(
+                results = results,
+                navController = navController,
+                installedApps = scannedApps.value
+            )
         }
     }
 }

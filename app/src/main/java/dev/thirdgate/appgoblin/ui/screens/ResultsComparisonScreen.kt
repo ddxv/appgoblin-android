@@ -1,5 +1,9 @@
 package dev.thirdgate.appgoblin.ui.screens
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Info
@@ -14,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import dev.openattribution.sdk.OpenAttribution
 import dev.thirdgate.appgoblin.data.model.AppAnalysisResult
@@ -30,11 +35,7 @@ fun ResultsComparisonScreen(results: AppAnalysisResult, navController: NavHostCo
         Icons.Default.Build,
     )
 
-
     Scaffold(
-        topBar = {
-            Text("Comparison", style = MaterialTheme.typography.headlineMedium)
-        },
         bottomBar = {
             NavigationBar {
                 tabs.forEachIndexed { index, title ->
@@ -46,11 +47,24 @@ fun ResultsComparisonScreen(results: AppAnalysisResult, navController: NavHostCo
                     )
                 }
             }
+        },
+        content = { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding) // Use padding passed to content to ensure proper space
+            ) {
+                when (selectedTab) {
+                    0 -> ByCompanyCategoryScreen(
+                        results = results,
+                        navController = navController,
+                        installedApps = installedApps
+                    )
+
+                    1 -> ByStoreIdScreen(results = results, navController = navController,)
+                }
+            }
         }
-    ) { innerPadding ->
-        when (selectedTab) {
-            0 -> ByCompanyCategoryScreen(results = results, navController = navController, installedApps = installedApps)
-            1 -> ByStoreIdScreen(results = results, navController = navController, )
-        }
+            )
     }
-}
+
