@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import dev.openattribution.sdk.OpenAttribution
 import dev.thirdgate.appgoblin.R
 import dev.thirdgate.appgoblin.data.model.AppAnalysisResult
 import dev.thirdgate.appgoblin.data.model.AppInfo
@@ -34,6 +35,10 @@ fun ByCompanyCategoryScreen(results: AppAnalysisResult, navController: NavHostCo
     val categories = results.sdks_by_company_category
     val numIdsSuccessful = results.success_store_ids.count()
     val numIdsFailed = results.failed_store_ids.count()
+
+    val context = LocalContext.current
+
+    OpenAttribution.trackEvent(context, "by_company_category_screen")
 
     Scaffold(
         topBar = {

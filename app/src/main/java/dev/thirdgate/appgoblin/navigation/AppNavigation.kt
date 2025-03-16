@@ -26,6 +26,7 @@ fun AppNavigation(navController: NavHostController, appList: List<AppInfo>, appR
 
             // Results screen with tabs for comparison
             ResultsComparisonScreen(results = results, navController = navController, appList)
+
         }
     }
 }

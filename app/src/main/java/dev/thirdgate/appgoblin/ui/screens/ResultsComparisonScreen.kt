@@ -15,17 +15,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
+import dev.openattribution.sdk.OpenAttribution
 import dev.thirdgate.appgoblin.data.model.AppAnalysisResult
 import dev.thirdgate.appgoblin.data.model.AppInfo
 
 @Composable
 fun ResultsComparisonScreen(results: AppAnalysisResult, navController: NavHostController, installedApps: List<AppInfo>) {
     var selectedTab by remember { mutableStateOf(0) }
+
+
     val tabs = listOf("By SDK Companies", "By App")
     val icons = listOf(
         Icons.Default.Info,
         Icons.Default.Build,
     )
+
 
     Scaffold(
         topBar = {
