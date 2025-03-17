@@ -8,6 +8,8 @@ import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.Log
+import android.util.LruCache
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.content.res.ResourcesCompat
 import dev.thirdgate.appgoblin.R
@@ -26,16 +28,20 @@ class AppRepository(private val context: Context) {
 
     private val packageManager = context.packageManager
 
+    // Simple memory cache for app icons
+    private val iconCache = LruCache<String, ImageBitmap>(100) // Cache up to 100 icons
+
     // Regular method to get installed apps
     suspend fun getInstalledApps(): List<AppInfo> = withContext(Dispatchers.IO) {
         val installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
 
-        // Create a default placeholder bitmap for apps where icon loading fails
+        // Create a default placeholder bitmap
         val placeholderBitmap = try {
             val placeholderDrawable = ResourcesCompat.getDrawable(context.resources, R.drawable.ic_placeholder, context.theme)
-            drawableToBitmap(placeholderDrawable)?.asImageBitmap()
+            drawableToBitmap(placeholderDrawable, 48, 48)?.asImageBitmap()
         } catch (e: Exception) {
-            Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888).apply {
+            Log.w("AppGoblin", "Failed to load placeholder: ${e.message}")
+            Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888).apply {
                 eraseColor(Color.LTGRAY)
             }.asImageBitmap()
         }
@@ -46,38 +52,49 @@ class AppRepository(private val context: Context) {
                 val appName = app.loadLabel(packageManager).toString()
                 val packageName = app.packageName
 
-                // Load app icon
-                val appIcon = try {
+                // Check cache first, then load if needed
+                val appIcon = getIconFromCache(packageName) ?: try {
                     val icon = packageManager.getApplicationIcon(packageName)
-                    drawableToBitmap(icon)?.asImageBitmap()
+                    val bitmap = drawableToBitmap(icon, 48, 48)?.asImageBitmap()
+                    bitmap?.let { iconCache.put(packageName, it) }
+                    bitmap ?: placeholderBitmap
                 } catch (e: Exception) {
+                    Log.w("AppGoblin", "Failed to load icon for $packageName: ${e.message}")
                     placeholderBitmap
                 }
 
                 AppInfo(name = appName, packageName = packageName, appIcon = appIcon)
             }
-            .sortedByDescending { it.packageName }
+            .sortedBy { it.name }
     }
 
-    // Simplified helper function to convert any drawable to a bitmap
-    private fun drawableToBitmap(drawable: Drawable?): Bitmap? {
+    // Get icon from cache
+    private fun getIconFromCache(packageName: String): ImageBitmap? {
+        return iconCache.get(packageName)
+    }
+
+    // Helper function to convert drawable to bitmap with specific dimensions
+    private fun drawableToBitmap(drawable: Drawable?, width: Int = 48, height: Int = 48): Bitmap? {
         if (drawable == null) return null
 
-        // If it's already a BitmapDrawable, just return its bitmap
+        // If it's already a BitmapDrawable, scale the bitmap appropriately
         if (drawable is BitmapDrawable) {
-            return drawable.bitmap
+            if (drawable.bitmap != null) {
+                if (drawable.bitmap.width == width && drawable.bitmap.height == height) {
+                    return drawable.bitmap
+                }
+                return Bitmap.createScaledBitmap(drawable.bitmap, width, height, true)
+            }
         }
 
         // For all other drawable types
-        val width = drawable.intrinsicWidth.coerceAtLeast(1)
-        val height = drawable.intrinsicHeight.coerceAtLeast(1)
-
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         drawable.setBounds(0, 0, width, height)
         drawable.draw(canvas)
         return bitmap
     }
+
     suspend fun analyzeApps(selectedApps: List<AppInfo>): AppAnalysisResult {
         return withContext(Dispatchers.IO) {
             try {
@@ -113,5 +130,4 @@ class AppRepository(private val context: Context) {
             }
         }
     }
-
 }

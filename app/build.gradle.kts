@@ -44,6 +44,8 @@ dependencies {
 
     // Open Source MMP/Attribution SDK
     implementation(libs.open.attribution.sdk)
+
+    implementation(libs.glide)
     implementation(libs.androidx.navigation.compose)
 
     implementation(libs.kotlinx.serialization.json)

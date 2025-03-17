@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -29,6 +30,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,36 +65,29 @@ fun AppScreen(
     appRepository: AppRepository,
     onAppsScanned: (List<AppInfo>) -> Unit
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("My Apps", "About")
-    val icons = listOf(
-        Icons.Default.Build,
-        Icons.Default.Settings
-    )
+    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    var apiError by rememberSaveable { mutableStateOf<String?>(null) }
 
-    val context = LocalContext.current  // Get context for launching activities
-    var apiError by remember { mutableStateOf<String?>(null) }
+    var isScanning by rememberSaveable { mutableStateOf(false) }
+    var scannedApps by rememberSaveable { mutableStateOf<List<AppInfo>>(emptyList()) }
 
-    // Add states to manage the app scanning process
-    var isScanning by remember { mutableStateOf(false) }
-    var scannedApps by remember { mutableStateOf<List<AppInfo>>(emptyList()) }
+    // Store selected apps as a List and convert it to a Set when needed
+    var selectedApps by rememberSaveable { mutableStateOf<List<AppInfo>>(emptyList()) }
+
     val hasApps = scannedApps.isNotEmpty()
-
-    // Manage selected apps state here
-    val selectedApps = remember { mutableStateListOf<AppInfo>() }
+    val context = LocalContext.current
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             NavigationBar {
-                tabs.forEachIndexed { index, title ->
+                listOf("My Apps", "About").forEachIndexed { index, title ->
                     NavigationBarItem(
-                        icon = { Icon(icons[index], contentDescription = title) },
+                        icon = { Icon(if (index == 0) Icons.Default.Build else Icons.Default.Settings, contentDescription = title) },
                         label = { Text(title) },
                         selected = selectedTab == index,
                         onClick = {
                             if (index == 1) {
-                                // Launch AboutActivity when "About" tab is clicked
                                 val intent = Intent(context, AboutActivity::class.java)
                                 context.startActivity(intent)
                             } else {
@@ -107,115 +102,94 @@ fun AppScreen(
         when (selectedTab) {
             0 -> {
                 if (isScanning) {
-                    // Show loading state when scanning apps
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(48.dp),
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "Building list of installed apps...",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
-                    }
+                    LoadingScreen(innerPadding)
                 } else if (!hasApps) {
-                    // Show the scan button when no apps are loaded
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(16.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Build List of installed apps",
-                                modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "No list of installed apps yet",
-                                style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Build list of your installed apps. After this is built you can select which app IDs to send to AppGoblin to identify SDKs and third-party libraries",
-                                style = MaterialTheme.typography.bodyLarge,
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 32.dp)
-                            )
-                            Spacer(modifier = Modifier.height(24.dp))
-                            Button(
-                                onClick = {
-                                    // Start scanning apps
-                                    isScanning = true
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        try {
-                                            val installedApps = appRepository.getInstalledApps()
-                                            scannedApps = installedApps
-                                            // Call the callback to share the scanned apps
-                                            onAppsScanned(installedApps)
-                                            isScanning = false
-                                            Log.i("AppGoblin", "Scanned ${installedApps.size} apps")
-                                        } catch (e: Exception) {
-                                            Log.e("AppGoblin", "Error scanning apps: ${e.message}")
-                                            isScanning = false
-                                            apiError = "Error: ${e.message}"
-                                        }
-                                    }
+                    ScanPrompt(
+                        innerPadding,
+                        onScanApps = {
+                            isScanning = true
+                            CoroutineScope(Dispatchers.Main).launch {
+                                try {
+                                    val installedApps = appRepository.getInstalledApps()
+                                    scannedApps = installedApps
+                                    onAppsScanned(installedApps)
+                                } catch (e: Exception) {
+                                    apiError = "Error: ${e.message}"
                                 }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = "Search"
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(text = "Build list of installed apps")
+                                isScanning = false
                             }
                         }
-                    }
+                    )
                 } else {
-                    // Show the checkable app list once apps are loaded
                     CheckableAppList(
                         apps = scannedApps,
                         apiError = apiError,
                         onSendSelected = { selected ->
-                            // Handle the analysis and navigation to the results screen
+                            selectedApps = selected // Persist selection
                             CoroutineScope(Dispatchers.Main).launch {
                                 try {
                                     val response = appRepository.analyzeApps(selected)
-                                    val json = Json { ignoreUnknownKeys = true }
-                                    val responseJson = json.encodeToString(response)
-
-                                    // Navigate to results screen
-                                    navController.navigate("results_screen/${responseJson.encodeURL()}")
+                                    val json = Json { ignoreUnknownKeys = true }.encodeToString(response)
+                                    navController.navigate("results_screen/${json.encodeURL()}")
                                 } catch (e: Exception) {
                                     apiError = "Error: ${e.message}"
                                 }
                             }
                         },
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding),
+                        initialSelectedApps = selectedApps.toSet() // Restore selection
                     )
                 }
             }
             1 -> Content("About", modifier = Modifier.padding(innerPadding))
+        }
+    }
+}
+
+
+@Composable
+fun LoadingScreen(innerPadding: PaddingValues) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            CircularProgressIndicator(modifier = Modifier.size(48.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("Building list of installed apps...", style = MaterialTheme.typography.bodyLarge)
+        }
+    }
+}
+
+@Composable
+fun ScanPrompt(innerPadding: PaddingValues, onScanApps: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp)) {
+            Icon(Icons.Default.Search, contentDescription = "Build List of installed apps", modifier = Modifier.size(64.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("No list of installed apps yet", style = MaterialTheme.typography.titleLarge)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                "Build a list of installed apps. After this, you can analyze selected apps to identify SDKs.",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 32.dp)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(onClick = onScanApps) {
+                Icon(Icons.Default.Search, contentDescription = "Search")
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Build list of installed apps")
+            }
         }
     }
 }

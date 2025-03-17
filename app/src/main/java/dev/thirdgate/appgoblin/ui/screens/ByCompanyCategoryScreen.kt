@@ -253,7 +253,7 @@ fun CompanyCard(company: SdkByCompanyCategory, numIdsSuccessful: Int, installedA
                 Text(if (expanded) "Hide Apps" else "Matched Apps")
             }
 
-
+            if (expanded) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -262,12 +262,14 @@ fun CompanyCard(company: SdkByCompanyCategory, numIdsSuccessful: Int, installedA
                 ) {
                     LazyColumn(modifier = Modifier.fillMaxWidth()) {
                         items(company.apps) { app ->
-                            val appIcon = installedApps.find { it.packageName == app.store_id }?.appIcon
-                                ?: ImageBitmap.imageResource(R.drawable.ic_placeholder)
+                            val appIcon =
+                                installedApps.find { it.packageName == app.store_id }?.appIcon
+                                    ?: ImageBitmap.imageResource(R.drawable.ic_placeholder)
 
                             AppItem(app, appIcon)
                         }
                     }
+                }
                 }
             }
         }
