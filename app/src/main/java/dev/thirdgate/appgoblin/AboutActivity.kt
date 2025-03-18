@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,19 +71,11 @@ fun AboutPage() {
         Text("Version $versionText", fontSize = 16.sp)
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text("All open source. Please consider starring on GitHub if you found this useful.", fontSize = 20.sp)
+        Text("All open source.", fontSize = 20.sp)
+        Text("Please consider starring on GitHub if you found this useful.", fontSize = 20.sp,     textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 16.dp))
+
         Spacer(modifier = Modifier.height(16.dp))
-        Text("App Source Code", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-        Text(
-            "github.com/ddxv/appgoblin-android",
-            fontSize = 20.sp,
-            modifier = Modifier.clickable {
-                val intent =
-                    Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/ddxv/appgoblin-android"))
-                currentContext.value.startActivity(intent)
-            }
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+
         Text("Source of Data", fontWeight = FontWeight.Bold, fontSize = 18.sp)
         Text(
             "github.com/ddxv/appgoblin",
@@ -93,6 +86,21 @@ fun AboutPage() {
                 currentContext.value.startActivity(intent)
             }
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text("App Source Code", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+        Text(
+            "github.com/ddxv/appgoblin-android",
+            fontSize = 20.sp,
+            modifier = Modifier.clickable {
+                val intent =
+                    Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/ddxv/appgoblin-android"))
+                currentContext.value.startActivity(intent)
+            }
+        )
+
+
         Spacer(modifier = Modifier.height(48.dp))
         Text("About AppGoblin", fontSize = 18.sp, fontWeight = FontWeight.Bold,)
         Spacer(modifier = Modifier.height(8.dp))

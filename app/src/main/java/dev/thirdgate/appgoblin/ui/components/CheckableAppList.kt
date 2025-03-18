@@ -3,6 +3,8 @@
     import androidx.compose.foundation.layout.*
     import androidx.compose.foundation.lazy.LazyColumn
     import androidx.compose.foundation.lazy.items
+    import androidx.compose.material.icons.Icons
+    import androidx.compose.material.icons.filled.Check
     import androidx.compose.material3.*
     import androidx.compose.runtime.*
     import androidx.compose.runtime.saveable.rememberSaveable
@@ -40,7 +42,22 @@
                 singleLine = true
             )
 
-            // Action Row
+
+
+            // Analyze Button
+            Button(
+                onClick = { onSendSelected(selectedApps.toList()) },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                enabled = selectedApps.isNotEmpty()
+            ) {
+                Text("Analyze Selected Apps")
+            }
+
+            // API Error Handling
+            apiError?.let {
+                Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(16.dp))
+            }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -59,20 +76,6 @@
                     )
                     Text("Select All", style = MaterialTheme.typography.bodyMedium)
                 }
-            }
-
-            // Analyze Button
-            Button(
-                onClick = { onSendSelected(selectedApps.toList()) },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                enabled = selectedApps.isNotEmpty()
-            ) {
-                Text("Analyze Selected Apps")
-            }
-
-            // API Error Handling
-            apiError?.let {
-                Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(16.dp))
             }
 
             // App List

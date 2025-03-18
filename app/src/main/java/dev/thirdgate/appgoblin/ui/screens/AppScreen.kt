@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -168,6 +170,8 @@ fun LoadingScreen(innerPadding: PaddingValues) {
 
 @Composable
 fun ScanPrompt(innerPadding: PaddingValues, onScanApps: () -> Unit) {
+    var userConsent by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -177,15 +181,37 @@ fun ScanPrompt(innerPadding: PaddingValues, onScanApps: () -> Unit) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp)) {
             Icon(Icons.Default.Search, contentDescription = "Build List of installed apps", modifier = Modifier.size(64.dp))
             Spacer(modifier = Modifier.height(16.dp))
-            Text("No list of installed apps yet", style = MaterialTheme.typography.titleLarge)
-            Spacer(modifier = Modifier.height(8.dp))
+            Text("Data Collection Consent", style = MaterialTheme.typography.titleLarge)
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
-                "Build a list of installed apps. After this, you can analyze selected apps to identify SDKs.",
+                "AppGoblin needs your consent before scanning your device:",
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 32.dp)
             )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Checkbox and consent text
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+            ) {
+                Checkbox(
+                    checked = userConsent,
+                    onCheckedChange = { userConsent = it }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "I allow AppGoblin to build a list of my installed apps and packages. " +
+                            "I understand I can select which app IDs are sent to AppGoblin's server to request those apps' tracking SDK data.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
-            Button(onClick = onScanApps) {
+            Button(
+                onClick = onScanApps,
+                enabled = userConsent
+            ) {
                 Icon(Icons.Default.Search, contentDescription = "Search")
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Build list of installed apps")
