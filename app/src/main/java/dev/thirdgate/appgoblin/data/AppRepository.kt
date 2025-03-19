@@ -17,6 +17,8 @@ import dev.thirdgate.appgoblin.data.model.ApiRequest
 import dev.thirdgate.appgoblin.data.model.AppAnalysisResult
 import dev.thirdgate.appgoblin.data.model.AppInfo
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -31,11 +33,46 @@ class AppRepository(private val context: Context) {
     // Simple memory cache for app icons
     private val iconCache = LruCache<String, ImageBitmap>(100) // Cache up to 100 icons
 
-    // Regular method to get installed apps
+//    // Regular method to get installed apps
+//    suspend fun getInstalledApps(): List<AppInfo> = withContext(Dispatchers.IO) {
+//        val installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+//
+//        // Create a default placeholder bitmap
+//        val placeholderBitmap = try {
+//            val placeholderDrawable = ResourcesCompat.getDrawable(context.resources, R.drawable.ic_placeholder, context.theme)
+//            drawableToBitmap(placeholderDrawable, 48, 48)?.asImageBitmap()
+//        } catch (e: Exception) {
+//            Log.w("AppGoblin", "Failed to load placeholder: ${e.message}")
+//            Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888).apply {
+//                eraseColor(Color.LTGRAY)
+//            }.asImageBitmap()
+//        }
+//
+//        installedApps
+//            .filterNot { it.packageName.startsWith("com.android") || it.packageName.startsWith("android.") }
+//            .map { app ->
+//                val appName = app.loadLabel(packageManager).toString()
+//                val packageName = app.packageName
+//
+//                // Check cache first, then load if needed
+//                val appIcon = getIconFromCache(packageName) ?: try {
+//                    val icon = packageManager.getApplicationIcon(packageName)
+//                    val bitmap = drawableToBitmap(icon, 48, 48)?.asImageBitmap()
+//                    bitmap?.let { iconCache.put(packageName, it) }
+//                    bitmap ?: placeholderBitmap
+//                } catch (e: Exception) {
+//                    Log.w("AppGoblin", "Failed to load icon for $packageName: ${e.message}")
+//                    placeholderBitmap
+//                }
+//
+//                AppInfo(name = appName, packageName = packageName, appIcon = appIcon)
+//            }
+//            .sortedBy { it.name }
+//    }
+
     suspend fun getInstalledApps(): List<AppInfo> = withContext(Dispatchers.IO) {
         val installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
 
-        // Create a default placeholder bitmap
         val placeholderBitmap = try {
             val placeholderDrawable = ResourcesCompat.getDrawable(context.resources, R.drawable.ic_placeholder, context.theme)
             drawableToBitmap(placeholderDrawable, 48, 48)?.asImageBitmap()
@@ -49,24 +86,27 @@ class AppRepository(private val context: Context) {
         installedApps
             .filterNot { it.packageName.startsWith("com.android") || it.packageName.startsWith("android.") }
             .map { app ->
-                val appName = app.loadLabel(packageManager).toString()
-                val packageName = app.packageName
+                async {
+                    val appName = app.loadLabel(packageManager).toString()
+                    val packageName = app.packageName
 
-                // Check cache first, then load if needed
-                val appIcon = getIconFromCache(packageName) ?: try {
-                    val icon = packageManager.getApplicationIcon(packageName)
-                    val bitmap = drawableToBitmap(icon, 48, 48)?.asImageBitmap()
-                    bitmap?.let { iconCache.put(packageName, it) }
-                    bitmap ?: placeholderBitmap
-                } catch (e: Exception) {
-                    Log.w("AppGoblin", "Failed to load icon for $packageName: ${e.message}")
-                    placeholderBitmap
+                    val appIcon = getIconFromCache(packageName) ?: try {
+                        val icon = packageManager.getApplicationIcon(packageName)
+                        val bitmap = drawableToBitmap(icon, 48, 48)?.asImageBitmap()
+                        bitmap?.let { iconCache.put(packageName, it) }
+                        bitmap ?: placeholderBitmap
+                    } catch (e: Exception) {
+                        Log.w("AppGoblin", "Failed to load icon for $packageName: ${e.message}")
+                        placeholderBitmap
+                    }
+
+                    AppInfo(name = appName, packageName = packageName, appIcon = appIcon)
                 }
-
-                AppInfo(name = appName, packageName = packageName, appIcon = appIcon)
             }
+            .awaitAll() // Run tasks in parallel
             .sortedBy { it.name }
     }
+
 
     // Get icon from cache
     private fun getIconFromCache(packageName: String): ImageBitmap? {

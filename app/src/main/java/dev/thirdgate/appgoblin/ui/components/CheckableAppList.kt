@@ -1,14 +1,23 @@
     package dev.thirdgate.appgoblin.ui.components
 
+    import androidx.compose.foundation.Image
+    import androidx.compose.foundation.background
+    import androidx.compose.foundation.clickable
     import androidx.compose.foundation.layout.*
     import androidx.compose.foundation.lazy.LazyColumn
     import androidx.compose.foundation.lazy.items
+    import androidx.compose.foundation.shape.CircleShape
     import androidx.compose.material3.*
     import androidx.compose.runtime.*
     import androidx.compose.runtime.saveable.rememberSaveable
     import androidx.compose.ui.Alignment
     import androidx.compose.ui.Modifier
+    import androidx.compose.ui.draw.clip
+    import androidx.compose.ui.graphics.ImageBitmap
+    import androidx.compose.ui.res.imageResource
+    import androidx.compose.ui.res.painterResource
     import androidx.compose.ui.unit.dp
+    import dev.thirdgate.appgoblin.R
     import dev.thirdgate.appgoblin.data.model.AppInfo
 
     @Composable
@@ -96,16 +105,33 @@
     @Composable
     fun AppListItem(app: AppInfo, isChecked: Boolean, onCheckedChange: (Boolean) -> Unit) {
         Row(
-            Modifier.fillMaxWidth().padding(4.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .clickable { onCheckedChange(!isChecked) }, // Make the entire row clickable
             verticalAlignment = Alignment.CenterVertically
         ) {
+
             Checkbox(
                 checked = isChecked,
                 onCheckedChange = onCheckedChange
             )
+
+            Image(
+                bitmap = app.appIcon ?: ImageBitmap.imageResource(R.drawable.ic_placeholder),
+                contentDescription = "App Icon",
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            )
+
             Column(Modifier.padding(start = 8.dp)) {
                 Text(app.name, style = MaterialTheme.typography.bodyLarge)
                 Text(app.packageName, style = MaterialTheme.typography.bodySmall)
             }
         }
     }
+
+
+
