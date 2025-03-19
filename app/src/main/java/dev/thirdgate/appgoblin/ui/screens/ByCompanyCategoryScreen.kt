@@ -2,6 +2,7 @@ package dev.thirdgate.appgoblin.ui.screens
 
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -47,12 +48,13 @@ fun ByCompanyCategoryScreen(results: AppAnalysisResult, navController: NavHostCo
     val numIdsSuccessful = results.success_store_ids.count()
     val numIdsFailed = results.failed_store_ids.count()
 
+
     val context = LocalContext.current
 
     OpenAttribution.trackEvent(context, "by_company_category_screen")
 
 
-    Column() {
+    Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -68,8 +70,15 @@ fun ByCompanyCategoryScreen(results: AppAnalysisResult, navController: NavHostCo
                 }
 
             }
-            Text("Successfully Analyzed Apps: $numIdsSuccessful/${numIdsSuccessful + numIdsFailed}", style = MaterialTheme.typography.bodyMedium)
-            Text("Apps Failed to Analyze: $numIdsFailed/${numIdsSuccessful + numIdsFailed}", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    "Successfully Analyzed Apps: $numIdsSuccessful/${numIdsSuccessful + numIdsFailed}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    "Apps Failed to Analyze: $numIdsFailed/${numIdsSuccessful + numIdsFailed}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
 
         LazyColumn(
             modifier = Modifier

@@ -109,6 +109,7 @@ class AppRepository(private val context: Context) {
 
                 val jsonBody = jsonParser.encodeToString(ApiRequest.serializer(), requestBody)
 
+
                 val client = OkHttpClient()
                 val request = Request.Builder()
                     .url("https://appgoblin.info/api/public/sdks/apps")

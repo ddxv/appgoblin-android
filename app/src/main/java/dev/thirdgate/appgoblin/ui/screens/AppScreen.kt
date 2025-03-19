@@ -1,7 +1,6 @@
 package dev.thirdgate.appgoblin.ui.screens
 
 import android.content.Intent
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,7 +28,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -128,18 +126,21 @@ fun AppScreen(
                         apiError = apiError,
                         onSendSelected = { selected ->
                             selectedApps = selected // Persist selection
-                            CoroutineScope(Dispatchers.Main).launch {
-                                try {
-                                    val response = appRepository.analyzeApps(selected)
-                                    val json = Json { ignoreUnknownKeys = true }.encodeToString(response)
-                                    navController.navigate("results_screen/${json.encodeURL()}")
-                                } catch (e: Exception) {
-                                    apiError = "Error: ${e.message}"
-                                }
-                            }
+                            val selectedJson = Json.encodeToString(selectedApps)
+                            val encodedJson = selectedJson.encodeURL()
+                            navController.navigate("results_screen/$encodedJson")
+//                            CoroutineScope(Dispatchers.Main).launch {
+//                                try {
+//                                    val response = appRepository.analyzeApps(selected)
+//                                    val json = Json { ignoreUnknownKeys = true }.encodeToString(response)
+//                                    navController.navigate("results_screen/${json.encodeURL()}")
+//                                } catch (e: Exception) {
+//                                    apiError = "Error: ${e.message}"
+//                                }
+//                            }
                         },
                         modifier = Modifier.padding(innerPadding),
-                        initialSelectedApps = selectedApps.toSet() // Restore selection
+                        initialSelectedApps = selectedApps.toSet()
                     )
                 }
             }
@@ -154,7 +155,7 @@ fun LoadingScreen(innerPadding: PaddingValues) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(innerPadding),
+            .padding(innerPadding), // Corrected: Now properly applies scaffold padding
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -167,6 +168,7 @@ fun LoadingScreen(innerPadding: PaddingValues) {
         }
     }
 }
+
 
 @Composable
 fun ScanPrompt(innerPadding: PaddingValues, onScanApps: () -> Unit) {
