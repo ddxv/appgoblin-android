@@ -1,6 +1,8 @@
 package dev.thirdgate.appgoblin.data.repository
 
 import android.content.Context
+import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -26,55 +28,44 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 
+
 class AppRepository(private val context: Context) {
 
     private val packageManager = context.packageManager
 
-    // Simple memory cache for app icons
     private val iconCache = LruCache<String, ImageBitmap>(100) // Cache up to 100 icons
 
-//    // Regular method to get installed apps
-//    suspend fun getInstalledApps(): List<AppInfo> = withContext(Dispatchers.IO) {
-//        val installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-//
-//        // Create a default placeholder bitmap
-//        val placeholderBitmap = try {
-//            val placeholderDrawable = ResourcesCompat.getDrawable(context.resources, R.drawable.ic_placeholder, context.theme)
-//            drawableToBitmap(placeholderDrawable, 48, 48)?.asImageBitmap()
-//        } catch (e: Exception) {
-//            Log.w("AppGoblin", "Failed to load placeholder: ${e.message}")
-//            Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888).apply {
-//                eraseColor(Color.LTGRAY)
-//            }.asImageBitmap()
-//        }
-//
-//        installedApps
-//            .filterNot { it.packageName.startsWith("com.android") || it.packageName.startsWith("android.") }
-//            .map { app ->
-//                val appName = app.loadLabel(packageManager).toString()
-//                val packageName = app.packageName
-//
-//                // Check cache first, then load if needed
-//                val appIcon = getIconFromCache(packageName) ?: try {
-//                    val icon = packageManager.getApplicationIcon(packageName)
-//                    val bitmap = drawableToBitmap(icon, 48, 48)?.asImageBitmap()
-//                    bitmap?.let { iconCache.put(packageName, it) }
-//                    bitmap ?: placeholderBitmap
-//                } catch (e: Exception) {
-//                    Log.w("AppGoblin", "Failed to load icon for $packageName: ${e.message}")
-//                    placeholderBitmap
-//                }
-//
-//                AppInfo(name = appName, packageName = packageName, appIcon = appIcon)
-//            }
-//            .sortedBy { it.name }
-//    }
+    suspend fun getInstalledUserApps(): List<AppInfo> = withContext(Dispatchers.IO) {
+        // Alternative faster approach: Get all launcher activities directly
+        val launcherIntent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_LAUNCHER)
+        }
 
-    suspend fun getInstalledApps(): List<AppInfo> = withContext(Dispatchers.IO) {
-        val installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+        val launcherApps = packageManager.queryIntentActivities(launcherIntent, 0)
+            .mapNotNull { resolveInfo ->
+                try {
+                    packageManager.getApplicationInfo(resolveInfo.activityInfo.packageName, 0)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            .distinctBy { it.packageName }
+            .filter { app ->
+                // Still apply system package filtering
+                val isUserApp = (app.flags and ApplicationInfo.FLAG_SYSTEM) == 0
+                val isUpdatedSystemApp =
+                    (app.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+                val isSystemPackage = isSystemPackageName(app.packageName)
+
+                (isUserApp || isUpdatedSystemApp) && !isSystemPackage
+            }
 
         val placeholderBitmap = try {
-            val placeholderDrawable = ResourcesCompat.getDrawable(context.resources, R.drawable.ic_placeholder, context.theme)
+            val placeholderDrawable = ResourcesCompat.getDrawable(
+                context.resources,
+                R.drawable.ic_placeholder,
+                context.theme
+            )
             drawableToBitmap(placeholderDrawable, 48, 48)?.asImageBitmap()
         } catch (e: Exception) {
             Log.w("AppGoblin", "Failed to load placeholder: ${e.message}")
@@ -83,8 +74,7 @@ class AppRepository(private val context: Context) {
             }.asImageBitmap()
         }
 
-        installedApps
-            .filterNot { it.packageName.startsWith("com.android") || it.packageName.startsWith("android.") }
+        launcherApps
             .map { app ->
                 async {
                     val appName = app.loadLabel(packageManager).toString()
@@ -103,8 +93,66 @@ class AppRepository(private val context: Context) {
                     AppInfo(name = appName, packageName = packageName, appIcon = appIcon)
                 }
             }
-            .awaitAll() // Run tasks in parallel
+            .awaitAll()
             .sortedBy { it.name }
+    }
+
+    private fun isUserInstalledApp(app: ApplicationInfo): Boolean {
+        // Method 1: Check if app was installed by user (not system)
+        val isUserApp = (app.flags and ApplicationInfo.FLAG_SYSTEM) == 0
+
+        // Method 2: Check if it's an updated system app that should be considered user-installed
+        val isUpdatedSystemApp = (app.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+
+        // Method 3: Additional package name filters for common system apps
+        val isSystemPackage = isSystemPackageName(app.packageName)
+
+        // Method 4: Check if the app has a launcher activity (user-facing apps)
+        val hasLauncherActivity = hasLauncherActivity(app.packageName)
+
+        // An app is considered user-installed if:
+        // - It's not a system app OR it's an updated system app
+        // - AND it's not a known system package
+        // - AND it has a launcher activity (optional, but helps filter out background services)
+        return (isUserApp || isUpdatedSystemApp) && !isSystemPackage && hasLauncherActivity
+    }
+
+    private fun isSystemPackageName(packageName: String): Boolean {
+        val systemPrefixes = setOf(
+            "com.android",
+            "android.",
+            "com.google.android",
+            "com.samsung",
+            "com.sec.android",
+            "com.lge",
+            "com.htc",
+            "com.sonymobile",
+            "com.miui",
+            "com.xiaomi",
+            "com.huawei",
+            "com.oneplus",
+            "com.oppo",
+            "com.vivo",
+            "com.qualcomm",
+            "com.mediatek"
+        )
+
+        return systemPrefixes.any { packageName.startsWith(it) }
+    }
+
+    private fun hasLauncherActivity(packageName: String): Boolean {
+        return try {
+            val intent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_LAUNCHER)
+                `package` = packageName
+            }
+            val activities =
+                packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+            activities.isNotEmpty()
+        } catch (e: Exception) {
+            Log.w("AppGoblin", "Failed to check launcher activity for $packageName: ${e.message}")
+            false
+        }
     }
 
 
@@ -135,6 +183,7 @@ class AppRepository(private val context: Context) {
         return bitmap
     }
 
+
     suspend fun analyzeApps(selectedApps: List<AppInfo>): AppAnalysisResult {
         return withContext(Dispatchers.IO) {
             try {
@@ -152,7 +201,8 @@ class AppRepository(private val context: Context) {
 
                 val client = OkHttpClient()
                 val request = Request.Builder()
-                    .url("https://appgoblin.info/api/public/sdks/apps")
+//                    .url("https://appgoblin.info/api/public/sdks/apps")
+                    .url("http://localhost:8000/api/public/sdks/apps")
                     .post(jsonBody.toRequestBody("application/json".toMediaType()))
                     .build()
 
@@ -168,6 +218,35 @@ class AppRepository(private val context: Context) {
             } catch (e: Exception) {
                 Log.e("AppGoblin", "Error analyzing apps: ${e.message}")
                 return@withContext AppAnalysisResult()
+            }
+        }
+    }
+
+    suspend fun requestSDKScan(packageNames: List<String>): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val requestBody = ApiRequest(store_ids = packageNames)
+
+                // Use the existing JSON parser from the analyzeApps function
+                val jsonParser = Json {
+                    ignoreUnknownKeys = true
+                    coerceInputValues = true
+                }
+
+                val jsonBody = jsonParser.encodeToString(ApiRequest.serializer(), requestBody)
+
+                val client = OkHttpClient()
+                val request = Request.Builder()
+                    .url("https://appgoblin.info/api/public/sdks/apps/requestSDKScan")
+                    .post(jsonBody.toRequestBody("application/json".toMediaType()))
+                    .build()
+
+                client.newCall(request).execute().use { response ->
+                    return@use response.isSuccessful
+                }
+            } catch (e: Exception) {
+                Log.e("AppGoblin", "Error requesting SDK scan: ${e.message}")
+                return@withContext false
             }
         }
     }

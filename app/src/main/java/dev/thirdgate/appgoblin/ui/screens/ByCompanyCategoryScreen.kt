@@ -40,6 +40,8 @@ import dev.thirdgate.appgoblin.data.model.AppInfo
 import dev.thirdgate.appgoblin.data.model.CompanyCategory
 import dev.thirdgate.appgoblin.data.model.SdkByCompanyCategory
 import dev.thirdgate.appgoblin.data.model.StoreAppInfo
+import dev.thirdgate.appgoblin.data.repository.AppRepository
+import kotlinx.coroutines.launch
 
 @Composable
 fun ByCompanyCategoryScreen(results: AppAnalysisResult, navController: NavHostController, installedApps: List<AppInfo>) {
@@ -48,41 +50,133 @@ fun ByCompanyCategoryScreen(results: AppAnalysisResult, navController: NavHostCo
     val numIdsSuccessful = results.success_store_ids.count()
     val numIdsFailed = results.failed_store_ids.count()
 
-
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    var isScanning by remember { mutableStateOf(false) }
+    var scanCompleted by remember { mutableStateOf(false) }
+    var scanSuccess by remember { mutableStateOf(false) }
 
     OpenAttribution.trackEvent(context, "by_company_category_screen")
 
 
     Column(modifier = Modifier.padding(16.dp)) {
-            Row(
+        // Header with title and back button
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                "Analysis Results",
+                style = MaterialTheme.typography.headlineSmall
+            )
+            Button(onClick = { navController.popBackStack() }) {
+                Text("Back")
+            }
+        }
+
+        // Failed apps section
+        if (numIdsFailed > 0) {
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .padding(bottom = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
             ) {
-                Text(
-                    "Analysis Results",
-                    style = MaterialTheme.typography.headlineSmall
-                )
-                Button(onClick = { navController.popBackStack() }) {
-                    Text("Back")
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        "Apps not yet in AppGoblin's database: $numIdsFailed/${numIdsSuccessful + numIdsFailed}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    if (!isScanning) {
+                        Button(
+                            onClick = {
+                                isScanning = true
+                                scanCompleted = false
+
+                                scope.launch {
+                                    try {
+                                        val repository = AppRepository(context)
+                                        val success = repository.requestSDKScan(results.failed_store_ids)
+
+                                        isScanning = false
+                                        scanCompleted = true
+                                        scanSuccess = success
+
+                                        OpenAttribution.trackEvent(context, "request_sdk_scan")
+                                    } catch (e: Exception) {
+                                        Log.e("AppGoblin", "Error in scan button: ${e.message}")
+                                        isScanning = false
+                                        scanCompleted = true
+                                        scanSuccess = false
+                                    }
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ),
+                            modifier = Modifier.align(Alignment.Start) // Left-align button
+                        ) {
+                            Text("Request AppGoblin Decompile Apps")
+                        }
+                    } else {
+                        // Loading indicator
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Requesting scan...")
+                        }
+                    }
+
+                    // Success/failure message
+                    if (scanCompleted) {
+                        Text(
+                            text = if (scanSuccess)
+                                "Apps submitted successfully. Results will be available on AppGoblin in several days."
+                            else
+                                "Failed to request SDK scan. Please try again.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (scanSuccess)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        "If you request these apps please expect several days for them to process. They will attempt to be downloaded and decompiled on the AppGoblin servers. As this process can encounter issues, please reach out on Discord if you have any issues.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
-
             }
-                Text(
-                    "Successfully Analyzed Apps: $numIdsSuccessful/${numIdsSuccessful + numIdsFailed}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    "Apps Failed to Analyze: $numIdsFailed/${numIdsSuccessful + numIdsFailed}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+        }
 
+        // Successfully analyzed apps section
+        Text(
+            "Successfully Analyzed Apps: $numIdsSuccessful/${numIdsSuccessful + numIdsFailed}",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
 
+        // Categories list
         LazyColumn(
-            modifier = Modifier
-                .fillMaxHeight()
+            modifier = Modifier.fillMaxSize()
         ) {
             categories.forEach { (categoryName, companies) ->
                 item {
@@ -90,7 +184,7 @@ fun ByCompanyCategoryScreen(results: AppAnalysisResult, navController: NavHostCo
                 }
             }
         }
-        }
+    }
     }
 
 

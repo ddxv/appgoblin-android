@@ -110,7 +110,7 @@ fun AppScreen(
                             isScanning = true
                             CoroutineScope(Dispatchers.Main).launch {
                                 try {
-                                    val installedApps = appRepository.getInstalledApps()
+                                    val installedApps = appRepository.getInstalledUserApps()
                                     scannedApps = installedApps
                                     onAppsScanned(installedApps)
                                 } catch (e: Exception) {
