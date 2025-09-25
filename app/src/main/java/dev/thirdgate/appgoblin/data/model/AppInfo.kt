@@ -11,6 +11,7 @@ data class AppInfo(
     val name: String,
     val packageName: String,
     var isSelected: Boolean = false,
+    var isSystemApp: Boolean = false,
     @Transient
     val appIcon: ImageBitmap? = null
 ) : Parcelable {
@@ -18,6 +19,7 @@ data class AppInfo(
     constructor(parcel: Parcel) : this(
         parcel.readString() ?: "",
         parcel.readString() ?: "",
+        parcel.readInt() == 1,
         parcel.readInt() == 1,
         null // Don't include the image
     )
@@ -27,6 +29,7 @@ data class AppInfo(
         parcel.writeString(name)
         parcel.writeString(packageName)
         parcel.writeInt(if (isSelected) 1 else 0)
+        parcel.writeInt(if (isSystemApp) 1 else 0)
         // Don't write the image
     }
 

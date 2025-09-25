@@ -79,7 +79,8 @@ fun AboutPage() {
         Text("Source of Data", fontWeight = FontWeight.Bold, fontSize = 18.sp)
         Text(
             "github.com/ddxv/appgoblin",
-            fontSize = 20.sp,
+            fontSize = 18.sp,
+            color = MaterialTheme.colorScheme.secondary,
             modifier = Modifier.clickable {
                 val intent =
                     Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/ddxv/appgoblin"))
@@ -92,7 +93,8 @@ fun AboutPage() {
         Text("App Source Code", fontWeight = FontWeight.Bold, fontSize = 18.sp)
         Text(
             "github.com/ddxv/appgoblin-android",
-            fontSize = 20.sp,
+            fontSize = 18.sp,
+            color = MaterialTheme.colorScheme.secondary,
             modifier = Modifier.clickable {
                 val intent =
                     Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/ddxv/appgoblin-android"))
@@ -107,6 +109,7 @@ fun AboutPage() {
         Text(
             "appgoblin.info/about",
             fontSize = 18.sp,
+            color = MaterialTheme.colorScheme.secondary,
             modifier = Modifier.clickable {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://appgoblin.info/about?referrer=dev.thirdgate.appgoblin"))
                 currentContext.value.startActivity(intent)
@@ -118,6 +121,7 @@ fun AboutPage() {
         Text(
             "thirdgate.dev",
             fontSize = 18.sp,
+            color = MaterialTheme.colorScheme.secondary,
             modifier = Modifier.clickable {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://thirdgate.dev"))
                 currentContext.value.startActivity(intent)
@@ -129,6 +133,7 @@ fun AboutPage() {
         Text(
             "appgoblin.info/privacy_policy.html",
             fontSize = 18.sp,
+            color = MaterialTheme.colorScheme.secondary,
             modifier = Modifier.clickable {
                 val intent = Intent(
                     Intent.ACTION_VIEW,

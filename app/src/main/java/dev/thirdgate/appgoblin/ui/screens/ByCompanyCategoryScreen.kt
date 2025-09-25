@@ -16,7 +16,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.AccountBox
-import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.MoreVert
@@ -42,6 +41,7 @@ import dev.thirdgate.appgoblin.data.model.SdkByCompanyCategory
 import dev.thirdgate.appgoblin.data.model.StoreAppInfo
 import dev.thirdgate.appgoblin.data.repository.AppRepository
 import kotlinx.coroutines.launch
+import coil.compose.AsyncImage
 
 @Composable
 fun ByCompanyCategoryScreen(results: AppAnalysisResult, navController: NavHostController, installedApps: List<AppInfo>) {
@@ -255,6 +255,11 @@ fun CompanyCard(company: SdkByCompanyCategory, numIdsSuccessful: Int, installedA
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                AsyncImage(
+                    model = company.company_logo_url,
+                    contentDescription = "${company.company_name} logo",
+                    modifier = Modifier.size(40.dp)
+                )
                 Text(
                     text = company.company_name,
                     style = MaterialTheme.typography.titleMedium,
@@ -329,7 +334,7 @@ fun CompanyCard(company: SdkByCompanyCategory, numIdsSuccessful: Int, installedA
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "${company.count}/${numIdsSuccessful}",
+                        text = "${company.count} apps out of ${numIdsSuccessful}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )

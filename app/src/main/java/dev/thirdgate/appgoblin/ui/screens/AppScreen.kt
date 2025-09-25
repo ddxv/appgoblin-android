@@ -110,7 +110,7 @@ fun AppScreen(
                             isScanning = true
                             CoroutineScope(Dispatchers.Main).launch {
                                 try {
-                                    val installedApps = appRepository.getInstalledUserApps()
+                                    val installedApps = appRepository.getInstalledApps()
                                     scannedApps = installedApps
                                     onAppsScanned(installedApps)
                                 } catch (e: Exception) {
@@ -217,7 +217,9 @@ fun ScanPrompt(innerPadding: PaddingValues, onScanApps: () -> Unit) {
                 Icon(Icons.Default.Search, contentDescription = "Search")
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Build list of installed apps")
+
             }
+
         }
     }
 }

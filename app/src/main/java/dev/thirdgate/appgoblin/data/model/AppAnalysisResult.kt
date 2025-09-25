@@ -37,6 +37,7 @@ data class StoreAppInfo(
 data class SdkByCompanyCategory(
     val company_name: String = "None",
     val company_domain: String = "None",
+    val company_logo_url: String = "None",
     val count: Int = 0,
     val percent_open_source: Double = 0.0,
     val apps: List<StoreAppInfo> = emptyList()

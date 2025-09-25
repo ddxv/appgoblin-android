@@ -35,8 +35,8 @@ class AppRepository(private val context: Context) {
 
     private val iconCache = LruCache<String, ImageBitmap>(100) // Cache up to 100 icons
 
-    suspend fun getInstalledUserApps(): List<AppInfo> = withContext(Dispatchers.IO) {
-        // Alternative faster approach: Get all launcher activities directly
+    suspend fun getInstalledApps(): List<AppInfo> = withContext(Dispatchers.IO) {
+        // Get all launcher activities directly
         val launcherIntent = Intent(Intent.ACTION_MAIN).apply {
             addCategory(Intent.CATEGORY_LAUNCHER)
         }
@@ -50,15 +50,6 @@ class AppRepository(private val context: Context) {
                 }
             }
             .distinctBy { it.packageName }
-            .filter { app ->
-                // Still apply system package filtering
-                val isUserApp = (app.flags and ApplicationInfo.FLAG_SYSTEM) == 0
-                val isUpdatedSystemApp =
-                    (app.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
-                val isSystemPackage = isSystemPackageName(app.packageName)
-
-                (isUserApp || isUpdatedSystemApp) && !isSystemPackage
-            }
 
         val placeholderBitmap = try {
             val placeholderDrawable = ResourcesCompat.getDrawable(
@@ -80,6 +71,9 @@ class AppRepository(private val context: Context) {
                     val appName = app.loadLabel(packageManager).toString()
                     val packageName = app.packageName
 
+                    // Determine if this is a system app
+                    val isSystemApp = determineIfSystemApp(app)
+
                     val appIcon = getIconFromCache(packageName) ?: try {
                         val icon = packageManager.getApplicationIcon(packageName)
                         val bitmap = drawableToBitmap(icon, 48, 48)?.asImageBitmap()
@@ -90,31 +84,32 @@ class AppRepository(private val context: Context) {
                         placeholderBitmap
                     }
 
-                    AppInfo(name = appName, packageName = packageName, appIcon = appIcon)
+                    AppInfo(
+                        name = appName,
+                        packageName = packageName,
+                        isSystemApp = isSystemApp,
+                        appIcon = appIcon
+                    )
                 }
             }
             .awaitAll()
             .sortedBy { it.name }
     }
 
-    private fun isUserInstalledApp(app: ApplicationInfo): Boolean {
-        // Method 1: Check if app was installed by user (not system)
-        val isUserApp = (app.flags and ApplicationInfo.FLAG_SYSTEM) == 0
+    private fun determineIfSystemApp(app: ApplicationInfo): Boolean {
+        // Check if it's a system app (not user-installed)
+        val isSystemApp = (app.flags and ApplicationInfo.FLAG_SYSTEM) != 0
 
-        // Method 2: Check if it's an updated system app that should be considered user-installed
+        // Check if it's an updated system app (these are often considered user apps)
         val isUpdatedSystemApp = (app.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
 
-        // Method 3: Additional package name filters for common system apps
-        val isSystemPackage = isSystemPackageName(app.packageName)
+        // Check if it has a system package name
+        val hasSystemPackageName = isSystemPackageName(app.packageName)
 
-        // Method 4: Check if the app has a launcher activity (user-facing apps)
-        val hasLauncherActivity = hasLauncherActivity(app.packageName)
-
-        // An app is considered user-installed if:
-        // - It's not a system app OR it's an updated system app
-        // - AND it's not a known system package
-        // - AND it has a launcher activity (optional, but helps filter out background services)
-        return (isUserApp || isUpdatedSystemApp) && !isSystemPackage && hasLauncherActivity
+        // An app is considered a system app if:
+        // - It has the system flag AND it's not an updated system app
+        // - OR it has a known system package name
+        return (isSystemApp && !isUpdatedSystemApp) || hasSystemPackageName
     }
 
     private fun isSystemPackageName(packageName: String): Boolean {
@@ -139,22 +134,6 @@ class AppRepository(private val context: Context) {
 
         return systemPrefixes.any { packageName.startsWith(it) }
     }
-
-    private fun hasLauncherActivity(packageName: String): Boolean {
-        return try {
-            val intent = Intent(Intent.ACTION_MAIN).apply {
-                addCategory(Intent.CATEGORY_LAUNCHER)
-                `package` = packageName
-            }
-            val activities =
-                packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
-            activities.isNotEmpty()
-        } catch (e: Exception) {
-            Log.w("AppGoblin", "Failed to check launcher activity for $packageName: ${e.message}")
-            false
-        }
-    }
-
 
     // Get icon from cache
     private fun getIconFromCache(packageName: String): ImageBitmap? {
