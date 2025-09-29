@@ -180,8 +180,8 @@ class AppRepository(private val context: Context) {
 
                 val client = OkHttpClient()
                 val request = Request.Builder()
-//                    .url("https://appgoblin.info/api/public/sdks/apps")
-                    .url("http://localhost:8000/api/public/sdks/apps")
+                    .url("https://appgoblin.info/api/public/sdks/apps")
+//                    .url("http://localhost:8000/api/public/sdks/apps")
                     .post(jsonBody.toRequestBody("application/json".toMediaType()))
                     .build()
 
