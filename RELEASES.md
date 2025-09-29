@@ -1,8 +1,5 @@
 # AppGoblin Android - Release Notes
 
-All APKs are debug builds for testing purposes.  
-Do **not** use these as Play Store production builds.
-
 ---
 
 ## v1.1 - 2025-09-29
