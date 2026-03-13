@@ -2,9 +2,7 @@ package dev.thirdgate.appgoblin.data.model
 
 import android.os.Parcel
 import android.os.Parcelable
-import androidx.compose.ui.graphics.ImageBitmap
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 
 @Serializable
 data class AppInfo(
@@ -12,8 +10,6 @@ data class AppInfo(
     val packageName: String,
     var isSelected: Boolean = false,
     var isSystemApp: Boolean = false,
-    @Transient
-    val appIcon: ImageBitmap? = null
 ) : Parcelable {
     // Tell Android how to create this object from a Parcel
     constructor(parcel: Parcel) : this(
@@ -21,7 +17,6 @@ data class AppInfo(
         parcel.readString() ?: "",
         parcel.readInt() == 1,
         parcel.readInt() == 1,
-        null // Don't include the image
     )
 
     // Tell Android how to write this object to a Parcel
@@ -30,7 +25,6 @@ data class AppInfo(
         parcel.writeString(packageName)
         parcel.writeInt(if (isSelected) 1 else 0)
         parcel.writeInt(if (isSystemApp) 1 else 0)
-        // Don't write the image
     }
 
     override fun describeContents(): Int = 0

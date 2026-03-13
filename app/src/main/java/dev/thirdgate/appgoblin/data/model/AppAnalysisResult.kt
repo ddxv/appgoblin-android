@@ -17,7 +17,9 @@ enum class CompanyCategory(val slug: String, val prettyName: String) {
     @SerialName("development-tools") DEVELOPMENT_TOOLS("development-tools", "Development Tools"),
     @SerialName("ad-attribution") AD_ATTRIBUTION("ad-attribution", "Ad Attribution"),
     @SerialName("product-analytics") PRODUCT_ANALYTICS("product-analytics", "Product Analytics"),
-    @SerialName("business-tools") BUSINESS_TOOLS("business-tools", "Business Tools");
+    @SerialName("business-tools") BUSINESS_TOOLS("business-tools", "Business Tools"),
+    @SerialName("mediation") AD_MEDIATION(slug="mediation", prettyName="Ad Mediation");
+
 
     companion object {
         val ALL_CATEGORIES = values().map { it.slug }
