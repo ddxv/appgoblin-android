@@ -47,6 +47,8 @@ dependencies {
     // Open Source MMP/Attribution SDK
     implementation(libs.open.attribution.sdk)
 
+    implementation(libs.compose.material.icons)
+
     implementation(libs.glide)
     implementation(libs.androidx.navigation.compose)
 
