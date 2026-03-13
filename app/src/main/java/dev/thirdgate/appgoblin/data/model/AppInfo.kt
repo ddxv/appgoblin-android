@@ -2,7 +2,9 @@ package dev.thirdgate.appgoblin.data.model
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.compose.ui.graphics.ImageBitmap
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 data class AppInfo(
@@ -10,6 +12,7 @@ data class AppInfo(
     val packageName: String,
     var isSelected: Boolean = false,
     var isSystemApp: Boolean = false,
+    @Transient var appIcon: ImageBitmap? = null
 ) : Parcelable {
     // Tell Android how to create this object from a Parcel
     constructor(parcel: Parcel) : this(

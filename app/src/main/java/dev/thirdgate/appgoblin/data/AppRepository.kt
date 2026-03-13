@@ -67,7 +67,7 @@ class AppRepository(private val context: Context) {
 
         launcherApps
             .map { app ->
-                async {
+                async<AppInfo> {
                     val appName = app.loadLabel(packageManager).toString()
                     val packageName = app.packageName
 
