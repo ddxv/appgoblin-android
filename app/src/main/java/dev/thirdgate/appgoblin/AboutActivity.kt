@@ -78,12 +78,12 @@ fun AboutPage() {
 
         Text("Source of Data", fontWeight = FontWeight.Bold, fontSize = 18.sp)
         Text(
-            "github.com/ddxv/appgoblin",
+            "github.com/appgoblin-dev/appgoblin",
             fontSize = 18.sp,
             color = MaterialTheme.colorScheme.secondary,
             modifier = Modifier.clickable {
                 val intent =
-                    Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/ddxv/appgoblin"))
+                    Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/appgoblin-dev/appgoblin"))
                 currentContext.value.startActivity(intent)
             }
         )
@@ -92,12 +92,12 @@ fun AboutPage() {
 
         Text("App Source Code", fontWeight = FontWeight.Bold, fontSize = 18.sp)
         Text(
-            "github.com/ddxv/appgoblin-android",
+            "github.com/appgoblin-dev/appgoblin-android",
             fontSize = 18.sp,
             color = MaterialTheme.colorScheme.secondary,
             modifier = Modifier.clickable {
                 val intent =
-                    Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/ddxv/appgoblin-android"))
+                    Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/appgoblin-dev/appgoblin-android"))
                 currentContext.value.startActivity(intent)
             }
         )

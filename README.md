@@ -23,14 +23,14 @@ AppGoblin's Android app allows you to examine the third-party SDKs and trackers 
 
 ## 📊 Data Source
 
-AppGoblin Mobile leverages the extensive [AppGoblin.info](https://appgoblin.info) database, which includes:
+AppGoblin Mobile leverages the extensive [AppGoblin](https://appgoblin.info) mobile intelligence database, which includes:
 
 - **4+ Million Apps**: Comprehensive analysis of iOS and Android applications
 - **1000s of SDKs**: Detailed tracking of third-party frameworks and SDKs
 - **Company Intelligence**: Information on ad tech companies and their client apps
 - **Daily Updates**: Continuously updated with new apps and SDK versions
 
-The data is collected and analyzed by [ddxv/adscrawler](https://github.com/ddxv/adscrawler), providing one of the most comprehensive free SDK databases available.
+The data is collected and analyzed by [appgoblin-dev/adscrawler](https://github.com/appgoblin-dev/adscrawler), providing one of the most comprehensive free SDK databases available.
 
 ## 🔗 AppGoblin Ecosystem
 
