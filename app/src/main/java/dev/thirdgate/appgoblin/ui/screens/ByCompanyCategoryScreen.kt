@@ -409,7 +409,7 @@ fun AppItem(app: StoreAppInfo, appIcon: ImageBitmap) {
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column(
-                modifier = Modifier.weight(1f) // Text takes available space
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = app.app_name,
@@ -419,35 +419,33 @@ fun AppItem(app: StoreAppInfo, appIcon: ImageBitmap) {
                     text = "Store ID: ${app.store_id}",
                     style = MaterialTheme.typography.bodySmall
                 )
-            }
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                IconButton(
-                    onClick = {
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.clickable {
                         val intent = Intent(
                             Intent.ACTION_VIEW,
                             Uri.parse("https://appgoblin.info/apps/${app.store_id}?referrer=dev.thirdgate.appgoblin")
                         )
                         currentContext.value.startActivity(intent)
-                    }
+                    },
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         imageVector = Icons.Default.Info,
                         contentDescription = "View details in browser",
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
                     )
-
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Explore App SDKs & Details",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
-                Text(
-                    text = "Explore App SDKs & Details",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
             }
         }
     }
 }
-
-
-
